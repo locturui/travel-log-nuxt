@@ -15,6 +15,13 @@
       "when": 1746918182110,
       "tag": "0001_exotic_ezekiel",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1746920663744,
+      "tag": "0002_previous_ravenous",
+      "breakpoints": true
     }
   ]
 }
