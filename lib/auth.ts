@@ -25,6 +25,7 @@ export const auth = betterAuth({
   advanced: {
     database: {
       generateId: false,
+      useNumberId: true,
     },
   },
   socialProviders: {
