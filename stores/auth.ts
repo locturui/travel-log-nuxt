@@ -1,7 +1,12 @@
+import { inferAdditionalFields } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/vue";
 import { defineStore } from "pinia";
 
-const authClient = createAuthClient();
+import type { auth } from "~/lib/auth";
+
+const authClient = createAuthClient({
+  plugins: [inferAdditionalFields<typeof auth>()],
+});
 
 export const useAuthStore = defineStore("useAuthStore", () => {
   const session = ref <Awaited<ReturnType<typeof authClient.useSession>> | null> (null);
@@ -17,15 +22,28 @@ export const useAuthStore = defineStore("useAuthStore", () => {
   });
 
   async function signIn() {
+    const { csrf } = useCsrf();
+    const headers = new Headers();
+    headers.append("csrf-token", csrf);
     await authClient.signIn.social({
       provider: "github",
       callbackURL: "/dashboard",
       errorCallbackURL: "/error",
+      fetchOptions: {
+        headers,
+      },
     });
   }
 
   async function signOut() {
-    await authClient.signOut();
+    const { csrf } = useCsrf();
+    const headers = new Headers();
+    headers.append("csrf-token", csrf);
+
+    await authClient.signOut({
+      fetchOptions: { headers },
+    });
+
     navigateTo("/");
   }
 

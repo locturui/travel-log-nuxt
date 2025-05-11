@@ -10,7 +10,3 @@ onMounted(() => {
     <span class="loading loading-dots loading-xl" />
   </div>
 </template>
-
-<style>
-
-</style>
