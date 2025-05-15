@@ -50,5 +50,21 @@
     "scss",
     "pcss",
     "postcss"
+  ],
+  "tailwindCSS.includeLanguages": {
+    "plaintext": "html",
+    "postcss": "css",
+    "css": "css"
+  },
+  "css.validate": true,
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "tailwindCSS.experimental.classRegex": [
+    "tw`([^`]*)", // tw`bg-white text-black`
+    "tw=\"([^\"]*)", // tw="bg-white text-black"
+    "class=\"([^\"]*)", // class="..."
+    "class: \"([^\"]*)", // class: "..."
+    "apply\\(([^)]*)\\)" // apply(bg-white text-black)
   ]
 }

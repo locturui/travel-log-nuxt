@@ -112,9 +112,9 @@ onBeforeRouteLeave(() => {
       <AppFormField
         :disabled="loading"
         type="number"
-        name="lng"
+        name="long"
         label="Longitude"
-        :error="errors.lng"
+        :error="errors.long"
       />
       <div class="flex justify-end gap-2">
         <button
