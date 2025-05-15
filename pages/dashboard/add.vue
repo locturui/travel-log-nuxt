@@ -32,9 +32,9 @@ const onSubmit = handleSubmit(async (values) => {
   catch (error) {
     const err = error as FetchError;
     if (err.data?.data) {
-      setErrors(err.data.data);
+      setErrors(err.data?.data);
     }
-    submitError.value = err.statusMessage ? err.statusMessage : "An error occurred";
+    submitError.value = err.data?.statusMessage || err.statusMessage || "An error occurred";
   }
   loading.value = false;
 });
