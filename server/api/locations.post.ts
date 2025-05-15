@@ -1,11 +1,9 @@
-import { and, eq } from "drizzle-orm";
-import { customAlphabet } from "nanoid";
+import type { DrizzleError } from "drizzle-orm";
+
 import slugify from "slug";
 
-import db from "~/lib/db";
-import { InsertLocation, location } from "~/lib/db/schema/location";
-
-const nanoid = customAlphabet("1234567890abcdefghijklmnopqrstuvwxyz", 5);
+import { findLocationByName, findUniqueSlug, insertLocation } from "~/lib/db/queries/location";
+import { InsertLocation } from "~/lib/db/schema/location";
 
 export default defineEventHandler(async (event) => {
   if (!event.context.user) {
@@ -38,12 +36,7 @@ export default defineEventHandler(async (event) => {
     }));
   }
 
-  const existingLocation = await db.query.location.findFirst({
-    where: and(
-      eq(location.name, result.data.name),
-      eq(location.userId, event.context.user.id),
-    ),
-  });
+  const existingLocation = await findLocationByName(result.data, event.context.user.id);
 
   if (existingLocation) {
     return sendError(event, createError({
@@ -52,23 +45,18 @@ export default defineEventHandler(async (event) => {
     }));
   }
 
-  let slug = slugify(result.data.name);
-  let existing = !!(await db.query.location.findFirst({ where: eq(location.slug, slug) }));
+  const slug = await findUniqueSlug(slugify(result.data.name));
 
-  while (existing) {
-    const random = nanoid();
-    const idSlug = `${slug}-${random}`;
-    existing = !!(await db.query.location.findFirst({ where: eq(location.slug, idSlug) }));
-    if (!existing) {
-      slug = idSlug;
+  try {
+    return insertLocation(result.data, slug, event.context.user.id);
+  }
+  catch (e) {
+    const error = e as DrizzleError;
+    if (error.message.includes("UNIQUE constraint failed")) {
+      return sendError(event, createError({
+        statusCode: 409,
+        statusMessage: "Location already exists",
+      }));
     }
   }
-
-  const [created] = await db.insert(location).values({
-    ...result.data,
-    slug,
-    userId: event.context.user.id,
-  }).returning();
-
-  return created;
 });
