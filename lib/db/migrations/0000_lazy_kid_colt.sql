@@ -54,7 +54,7 @@ CREATE TABLE `location` (
 	`slug` text NOT NULL,
 	`description` text,
 	`lat` real NOT NULL,
-	`lng` real NOT NULL,
+	`long` real NOT NULL,
 	`user_id` integer NOT NULL,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,

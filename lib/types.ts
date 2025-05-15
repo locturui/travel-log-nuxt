@@ -14,5 +14,6 @@ export type PointItem = {
 
 export type MapPoint = {
   id: number;
-  label: string;
+  name: string;
+  description: string | null;
 } & PointItem;

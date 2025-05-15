@@ -21,7 +21,7 @@ const error = route.query.error;
       </svg>
       <span>Oh no! {{ error || 'An unknown error occured :c' }}</span>
     </div>
-    <NuxtLink to="/" class="btn btn-primary">
+    <NuxtLink to="/" class="btn btn-primary dark:btn">
       Homepage
       <Icon name="tabler:arrow-left" size="32" />
     </NuxtLink>
