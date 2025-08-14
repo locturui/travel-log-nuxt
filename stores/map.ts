@@ -34,7 +34,7 @@ export const useMapStore = defineStore("useMapStore", () => {
 
       map.map?.fitBounds(bounds, {
         padding: 70,
-        maxZoom: 6,
+        maxZoom: 10,
       });
     });
 

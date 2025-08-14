@@ -63,9 +63,9 @@ function toggleSidebar() {
             :show-label="isSidebarOpen"
             :icon="item.icon"
             :text="item.label"
-            :href="item.href"
-            :icon-color="mapStore.selected === item.location ? 'text-accent' : undefined"
-            @mouseenter="mapStore.selected = item.location"
+            :to="item.to"
+            :icon-color=" isPointSelected(item.mapPoint, mapStore.selected) ? 'text-accent' : undefined"
+            @mouseenter="mapStore.selected = item.mapPoint"
             @mouseleave="mapStore.selected = null"
           />
         </div>
