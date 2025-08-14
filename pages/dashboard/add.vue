@@ -3,6 +3,8 @@ import type { FetchError } from "ofetch";
 
 import { toTypedSchema } from "@vee-validate/zod";
 
+import type { NominatimRes } from "~/lib/types";
+
 import { INNO } from "~/lib/constants";
 import { InsertLocation } from "~/lib/db/schema";
 
@@ -43,10 +45,22 @@ const onSubmit = handleSubmit(async (values) => {
     if (err.data?.data) {
       setErrors(err.data?.data);
     }
-    submitError.value = err.data?.statusMessage || err.statusMessage || "An error occurred";
+    submitError.value = getFetchErrorMessage(err);
   }
   loading.value = false;
 });
+
+function searchResSelected(result: NominatimRes) {
+  mapStore.addedPoint = {
+    id: 1,
+    description: "",
+    lat: Number(result.lat),
+    long: Number(result.lon),
+    name: result.display_name,
+    centerMap: true,
+  };
+  setFieldValue("name", result.display_name);
+}
 
 onBeforeRouteLeave(() => {
   if (!submitted.value && meta.value.dirty) {
@@ -127,11 +141,13 @@ effect(() => {
         label="Description"
         :error="errors.description"
       />
-      <p>Drag the <Icon name="tabler:map-pin-filled" class="text-warning" /> marker to your desired location. </p>
-      <p>You can also double-click on the map.</p>
       <p class="text-xs text-gray-400">
         {{ controlledValues.lat?.toFixed(4) }}, {{ controlledValues.long?.toFixed(4) }}
       </p>
+      <p>Drag the <Icon name="tabler:map-pin-filled" class="text-warning" /> marker to your desired location </p>
+      <p>You can also double-click on the map</p>
+      <p>Or search for a location below</p>
+
       <div class="flex justify-end gap-2">
         <button
           :disabled="loading"
@@ -157,6 +173,8 @@ effect(() => {
         </button>
       </div>
     </form>
+    <div class="divider" />
+    <AppPlaceSearch @result-selected="searchResSelected" />
   </div>
 </template>
 
