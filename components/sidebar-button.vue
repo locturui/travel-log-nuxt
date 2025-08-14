@@ -1,8 +1,11 @@
 <script lang="ts" setup>
+import type { RouteLocationRaw } from "vue-router";
+
 const props = defineProps<{
   icon: string;
   text: string;
-  href: string;
+  href?: string;
+  to?: RouteLocationRaw;
   showLabel: boolean;
   iconColor?: "text-accent" | "text-primary" | "text-secondary";
 }>();
@@ -23,7 +26,7 @@ const route = useRoute();
         'justify-start': props.showLabel,
       }"
       class="flex g-2 p-2 hover:bg-base-300 hover:cursor-pointer flex-nowrap"
-      :to="props.href"
+      :to="props.href || props.to"
     >
       <Icon
         :name="props.icon"

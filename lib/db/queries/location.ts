@@ -50,3 +50,15 @@ export async function getLocations(userId: number) {
     where: eq(location.userId, userId),
   });
 }
+
+export async function getLocation(slug: string, userId: number) {
+  return db.query.location.findFirst({
+    where: and(
+      eq(location.userId, userId),
+      eq(location.slug, slug),
+    ),
+    with: {
+      locationLogs: true,
+    },
+  });
+}
