@@ -8,12 +8,8 @@ export const useMapStore = defineStore("useMapStore", () => {
   const mapPoints = ref<MapPoint[]>([]);
 
   const selected = ref<MapPoint | null>(null);
-  const shouldZoom = ref(true);
 
-  function selectPointNoZoom(p: MapPoint | null) {
-    shouldZoom.value = false;
-    selected.value = p;
-  }
+  const addedPoint = ref<MapPoint | null>(null);
 
   async function init() {
     const { useMap } = await import("@indoorequal/vue-maplibre-gl");
@@ -42,29 +38,21 @@ export const useMapStore = defineStore("useMapStore", () => {
       });
     });
 
-    effect(() => {
-      if (selected.value) {
-        if (shouldZoom.value) {
-          map.map?.flyTo({
-            center: [selected.value.long, selected.value.lat],
-            speed: 0.8,
-          });
-        }
-        shouldZoom.value = true;
-      }
-      else if (bounds) {
-        map.map?.fitBounds(bounds, {
-          padding: 70,
-          maxZoom: 6,
+    watch(addedPoint, (newValue, oldValue) => {
+      if (newValue && !oldValue) {
+        map.map?.flyTo({
+          center: [newValue.long, newValue.lat],
+          speed: 0.8,
+          zoom: 6,
         });
       }
-    });
+    }, { immediate: true });
   }
 
   return {
     mapPoints,
     init,
     selected,
-    selectPointNoZoom,
+    addedPoint,
   };
 });

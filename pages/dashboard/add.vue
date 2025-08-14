@@ -3,6 +3,7 @@ import type { FetchError } from "ofetch";
 
 import { toTypedSchema } from "@vee-validate/zod";
 
+import { INNO } from "~/lib/constants";
 import { InsertLocation } from "~/lib/db/schema";
 
 const router = useRouter();
@@ -14,8 +15,16 @@ const loading = ref(false);
 
 const submitted = ref(false);
 
-const { handleSubmit, errors, meta, setErrors } = useForm({
+const mapStore = useMapStore();
+
+const { handleSubmit, errors, meta, setErrors, setFieldValue, controlledValues } = useForm({
   validationSchema: toTypedSchema(InsertLocation),
+  initialValues: {
+    name: "",
+    description: "",
+    lat: (INNO as [number, number])[1],
+    long: (INNO as [number, number])[0],
+  },
 });
 
 const onSubmit = handleSubmit(async (values) => {
@@ -49,14 +58,30 @@ onBeforeRouteLeave(() => {
       return false;
     }
   }
-  else {
-    return true;
+  mapStore.addedPoint = null;
+  return true;
+});
+
+onMounted(() => {
+  mapStore.addedPoint = {
+    lat: (INNO as [number, number])[1],
+    long: (INNO as [number, number])[0],
+    name: "Added point",
+    description: "",
+    id: 1,
+  };
+});
+
+effect(() => {
+  if (mapStore.addedPoint) {
+    setFieldValue("lat", mapStore.addedPoint.lat);
+    setFieldValue("long", mapStore.addedPoint.long);
   }
 });
 </script>
 
 <template>
-  <div class="container max-w-md mx-auto mt-5">
+  <div class="container max-w-md mx-auto mt-5 p-4">
     <div class="my-5">
       <h1 class="text-lg">
         Add Location
@@ -102,20 +127,11 @@ onBeforeRouteLeave(() => {
         label="Description"
         :error="errors.description"
       />
-      <AppFormField
-        :disabled="loading"
-        type="number"
-        name="lat"
-        label="Latitude"
-        :error="errors.lat"
-      />
-      <AppFormField
-        :disabled="loading"
-        type="number"
-        name="long"
-        label="Longitude"
-        :error="errors.long"
-      />
+      <p>Drag the <Icon name="tabler:map-pin-filled" class="text-warning" /> marker to your desired location. </p>
+      <p>You can also double-click on the map.</p>
+      <p class="text-xs text-gray-400">
+        {{ controlledValues.lat?.toFixed(4) }}, {{ controlledValues.long?.toFixed(4) }}
+      </p>
       <div class="flex justify-end gap-2">
         <button
           :disabled="loading"
