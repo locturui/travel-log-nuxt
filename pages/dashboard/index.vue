@@ -1,9 +1,9 @@
 <script setup lang="ts">
 const locationsStore = useLocationStore();
-const { locations, status } = storeToRefs(locationsStore);
+const { locations, locationsStatus } = storeToRefs(locationsStore);
 const mapStore = useMapStore();
 onMounted(() => {
-  locationsStore.refresh();
+  locationsStore.refreshLocations();
 });
 </script>
 
@@ -12,7 +12,7 @@ onMounted(() => {
     <h2 class="text-2xl">
       Locations
     </h2>
-    <div v-if="status === 'pending'">
+    <div v-if="locationsStatus === 'pending'">
       <span class="loading loading-spinner loading-xl" />
     </div>
     <div v-else-if="locations && locations.length > 0" class="flex flex-nowrap mt-4 gap-2 overflow-auto">

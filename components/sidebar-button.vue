@@ -3,7 +3,7 @@ import type { RouteLocationRaw } from "vue-router";
 
 const props = defineProps<{
   icon: string;
-  text: string;
+  label: string;
   href?: string;
   to?: RouteLocationRaw;
   showLabel: boolean;
@@ -17,7 +17,7 @@ const route = useRoute();
   <div
     :class="{ tooltip: !showLabel }"
     class="hover:tooltip-open tooltip-right"
-    :data-tip="showLabel ? undefined : props.text"
+    :data-tip="showLabel ? undefined : props.label"
   >
     <NuxtLink
       :class="{
@@ -36,7 +36,7 @@ const route = useRoute();
         }, iconColor]"
       />
       <Transition name="grow">
-        <span v-if="showLabel">{{ props.text }}</span>
+        <span v-if="showLabel">{{ props.label }}</span>
       </Transition>
     </NuxtLink>
   </div>
