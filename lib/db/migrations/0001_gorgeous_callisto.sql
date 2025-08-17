@@ -1,0 +1,1 @@
+ALTER TABLE `locationLog` RENAME COLUMN "lng" TO "long";

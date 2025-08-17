@@ -1,0 +1,66 @@
+<script setup lang="ts">
+import { INNO } from "~/lib/constants";
+import { InsertLocationLog } from "~/lib/db/schema";
+
+const props = defineProps<{
+  initialValues?: InsertLocationLog;
+  onSubmit: (location: InsertLocationLog) => Promise<any>;
+  onSubmitComplete: () => void;
+  submitLabel: string;
+  submitIcon: string;
+}>();
+
+const initialValues = {
+  name: "",
+  description: "",
+  startedAt: Date.now() - 24 * 60 * 60 * 1000,
+  endedAt: Date.now(),
+  long: (INNO as [number, number])[0],
+  lat: (INNO as [number, number])[1],
+};
+</script>
+
+<template>
+  <LocationBaseForm
+    v-slot="{ errors, loading }"
+    :schema="InsertLocationLog"
+    :initial-values="props.initialValues || initialValues"
+    :on-submit
+    :on-submit-complete
+    :submit-label
+    :submit-icon
+    :zoom="11"
+  >
+    <AppFormField
+      name="name"
+      label="Name"
+      type="text"
+      :error="errors.name"
+      :disabled="loading"
+    />
+
+    <AppFormField
+      name="description"
+      label="Description"
+      type="textarea"
+      :error="errors.description"
+      :disabled="loading"
+    />
+    <AppFormDateField
+      name="startedAt"
+      label="Started At"
+      :value="initialValues.startedAt"
+      type="text"
+      :error="errors.startedAt"
+      :disabled="loading"
+    />
+    <AppFormDateField
+      name="endedAt"
+      label="Ended At"
+      :value="initialValues.endedAt"
+      type="text"
+      :error="errors.endedAt"
+      :disabled="loading"
+    />
+  </LocationBaseForm>
+</template>
