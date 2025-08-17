@@ -1,19 +1,42 @@
+import type { SelectLocationWithLogs } from "~/lib/db/schema";
 import type { MapPoint } from "~/lib/types";
 
+const listLocationsInSidebar = new Set(["dashboard", "dashboard-add"]);
+const listCuurentLocationInSidebar = new Set([
+  "dashboard-location-slug",
+  "dashboard-location-slug-add",
+  "dashboard-location-slug-edit",
+]);
+
 export const useLocationStore = defineStore("useLocationStore", () => {
-  const { data, status, refresh } = useFetch("/api/locations", {
+  const route = useRoute();
+
+  const { data: locations, status: locationsStatus, refresh: refreshLocations } = useFetch("/api/locations", {
     lazy: true,
+  });
+
+  const locationUrlWithSlug = computed(() => `/api/locations/${route.params.slug}`);
+
+  const {
+    data: currentLocation,
+    status: currentStatus,
+    error: currentError,
+    refresh: refreshCurrentLocation,
+  } = useFetch<SelectLocationWithLogs>(locationUrlWithSlug, {
+    lazy: true,
+    immediate: false,
+    watch: false,
   });
 
   const sidebarStore = useSidebarStore();
   const mapStore = useMapStore();
 
   effect(() => {
-    if (data.value) {
+    if (locations.value && listLocationsInSidebar.has(route.name?.toString() || "")) {
       const mapPoints: MapPoint[] = [];
       const SidebarItems: SidebarItem[] = [];
 
-      data.value.forEach((loc) => {
+      locations.value.forEach((loc) => {
         const mapPoint = createMapPointFromLocation(loc);
         mapPoints.push(mapPoint);
 
@@ -29,13 +52,20 @@ export const useLocationStore = defineStore("useLocationStore", () => {
       sidebarStore.sidebarItems = SidebarItems;
       mapStore.mapPoints = mapPoints;
     }
-
-    sidebarStore.loading = status.value === "pending";
+    else if (currentLocation.value && listCuurentLocationInSidebar.has(route.name?.toString() || "")) {
+      sidebarStore.sidebarItems = [];
+      mapStore.mapPoints = [currentLocation.value];
+    }
+    sidebarStore.loading = locationsStatus.value === "pending";
   });
 
   return {
-    locations: data,
-    status,
-    refresh,
+    locations,
+    locationsStatus,
+    refreshLocations,
+    currentLocation,
+    currentStatus,
+    currentError,
+    refreshCurrentLocation,
   };
 });

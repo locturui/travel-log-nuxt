@@ -4,11 +4,68 @@ const route = useRoute();
 const locationsStore = useLocationStore();
 const sidebarStore = useSidebarStore();
 const mapStore = useMapStore();
+const { currentLocation } = storeToRefs(locationsStore);
 
 onMounted(() => {
   isSidebarOpen.value = localStorage.getItem("isSidebarOpen") === "true";
   if (route.path !== "/dashboard") {
-    locationsStore.refresh();
+    locationsStore.refreshLocations();
+  }
+});
+
+effect(() => {
+  if (route.name === "dashboard") {
+    sidebarStore.sidebarTopItems = [
+      {
+        id: "link-dashboard",
+        label: "Locations",
+        icon: "tabler:map",
+        href: "/dashboard",
+      },
+      {
+        id: "link-location-add",
+        label: "Add Location",
+        icon: "tabler:circle-plus-filled",
+        href: "/dashboard/add",
+      },
+    ];
+  }
+  else if (route.name === "dashboard-location-slug") {
+    sidebarStore.sidebarTopItems = [
+      {
+        id: "link-dashboard",
+        label: "Back To Locations",
+        icon: "tabler:arrow-left",
+        href: "/dashboard",
+      },
+      {
+        id: "link-dashboard",
+        label: currentLocation.value ? currentLocation.value.name : "View Logs",
+        icon: "tabler:map",
+        to: {
+          name: "dashboard-location-slug",
+          params: { slug: currentLocation.value?.slug },
+        },
+      },
+      {
+        id: "link-location-edit",
+        label: "Edit Location",
+        icon: "tabler:map-pin-cog",
+        to: {
+          name: "dashboard-location-slug-edit",
+          params: { slug: currentLocation.value?.slug },
+        },
+      },
+      {
+        id: "link-location-add",
+        label: "Add Location Log",
+        icon: "tabler:circle-plus-filled",
+        to: {
+          name: "dashboard-location-slug-add",
+          params: { slug: currentLocation.value?.slug },
+        },
+      },
+    ];
   }
 });
 
@@ -39,16 +96,13 @@ function toggleSidebar() {
       </div>
       <div class="flex flex-col">
         <SidebarButton
+          v-for="sidebarItem in sidebarStore.sidebarTopItems"
+          :key="sidebarItem.id"
           :show-label="isSidebarOpen"
-          icon="tabler:map"
-          text="Locations"
-          href="/dashboard"
-        />
-        <SidebarButton
-          :show-label="isSidebarOpen"
-          icon="tabler:circle-plus-filled"
-          text="Add Location"
-          href="/dashboard/add"
+          :label="sidebarItem.label"
+          :icon="sidebarItem.icon"
+          :href="sidebarItem.href"
+          :to="sidebarItem.to"
         />
         <div v-if="sidebarStore.loading || sidebarStore.sidebarItems.length > 0" class="divider" />
 
@@ -62,10 +116,10 @@ function toggleSidebar() {
             :key="item.id"
             :show-label="isSidebarOpen"
             :icon="item.icon"
-            :text="item.label"
+            :label="item.label"
             :to="item.to"
             :icon-color=" isPointSelected(item.mapPoint, mapStore.selected) ? 'text-accent' : undefined"
-            @mouseenter="mapStore.selected = item.mapPoint"
+            @mouseenter="mapStore.selected = item.mapPoint ?? null"
             @mouseleave="mapStore.selected = null"
           />
         </div>
@@ -74,7 +128,7 @@ function toggleSidebar() {
         <SidebarButton
           :show-label="isSidebarOpen"
           icon="tabler:logout-2"
-          text="Sign Out"
+          label="Sign Out"
           href="/sign-out"
         />
       </div>
