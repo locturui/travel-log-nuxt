@@ -15,17 +15,17 @@ export const useLocationStore = defineStore("useLocationStore", () => {
     lazy: true,
   });
 
-  const locationUrlWithSlug = computed(() => `/api/locations/${route.params.slug}`);
-
   const {
     data: currentLocation,
     status: currentStatus,
     error: currentError,
     refresh: refreshCurrentLocation,
-  } = useFetch<SelectLocationWithLogs>(locationUrlWithSlug, {
+  } = useFetch<SelectLocationWithLogs>(() => `/api/locations/${route.params.slug}`, {
     lazy: true,
     immediate: false,
     watch: false,
+    key: "currentLocation",
+    default: () => null,
   });
 
   const sidebarStore = useSidebarStore();
