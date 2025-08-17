@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { FetchError } from "ofetch";
+
 const route = useRoute();
 const locationsStore = useLocationStore();
 const {
@@ -6,6 +8,35 @@ const {
   currentError: error,
   currentStatus: status,
 } = storeToRefs(locationsStore);
+
+const isOpen = ref(false);
+const deleteError = ref("");
+const isDeleting = ref(false);
+
+const loading = computed(() => status.value === "pending" || isDeleting.value);
+const errorMessage = computed(() => error.value?.statusMessage || deleteError.value);
+
+function openDialog() {
+  isOpen.value = true;
+  (document.activeElement as HTMLElement).blur();
+}
+
+async function confirmDelete() {
+  try {
+    deleteError.value = "";
+    isDeleting.value = true;
+    await $fetch(`/api/locations/${route.params.slug}`, {
+      method: "DELETE",
+    });
+
+    navigateTo("/dashboard");
+  }
+  catch (e) {
+    const error = e as FetchError;
+    deleteError.value = getFetchErrorMessage(error);
+  }
+  isDeleting.value = false;
+}
 
 onMounted(() => {
   locationsStore.refreshCurrentLocation();
@@ -20,17 +51,38 @@ onBeforeRouteUpdate((to) => {
 
 <template>
   <div class="p-4 min-h-62">
-    <div v-if="status === 'pending'">
+    <div v-if="loading">
       <div class="loading" />
     </div>
-    <div v-if="error && status !== 'pending'" class="alert alert-error">
+    <div v-if="errorMessage && !loading" class="alert alert-error">
       <h2 class="text-lg">
-        {{ error.statusMessage }}
+        {{ errorMessage }}
       </h2>
     </div>
-    <div v-if="route.name === 'dashboard-location-slug' && location && status !== 'pending'">
+    <div v-if="route.name === 'dashboard-location-slug' && location && !loading">
       <h2 class="text-xl">
         {{ location?.name }}
+        <div class="dropdown dropdown-bottom">
+          <div
+            tabindex="0"
+            role="button"
+            class="btn m-1 btn-sm p-0"
+          >
+            <Icon name="tabler:dots-vertical" size="20" />
+          </div>
+          <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+            <li>
+              <NuxtLink @click="openDialog">
+                <Icon name="tabler:trash-x-filled" />Delete
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink :to="{ name: 'dashboard-location-slug-edit', params: { slug: route.params.slug } }">
+                <Icon name="tabler:map-pin-cog" />Edit
+              </NuxtLink>
+            </li>
+          </ul>
+        </div>
       </h2>
       <p class="text-sm">
         {{ location?.description }}
@@ -48,5 +100,14 @@ onBeforeRouteUpdate((to) => {
     <div v-if="route.name !== 'dashboard-location-slug'">
       <NuxtPage />
     </div>
+    <AppDialog
+      :is-open="isOpen"
+      title="Are you sure?"
+      description="All the associated logs will be deleted as well. This action cannot be undone."
+      confirm-label="Yes, delete this location"
+      confirm-class="btn-warning"
+      @on-closed="isOpen = false"
+      @on-confirm="confirmDelete"
+    />
   </div>
 </template>
